@@ -3,6 +3,7 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips, ImageClip
 from PIL import Image, ImageDraw, ImageFont
 from tkinter import filedialog
 from tkinter import Tk
+from PIL import ImageFont
 
 # Initialize Tkinter root
 root = Tk()
@@ -15,58 +16,47 @@ video_path = filedialog.askopenfilename(title="Select video", filetypes=[("Video
 if video_path:
     title_text = input("Enter the video title: ")
 
-    # Define the size of the image (you might need to adjust this based on the video resolution)
-    width, height = 1920, 1080  # Adjust as necessary
+    title_image_name = f"{title_text}_title_image.jpg"
+    output_video_name = f"{title_text}_output_video.mp4"
 
-    # Create a new image with a white background
-    img = Image.new('RGB', (width, height), 'white')
-
-    # Initialize ImageDraw
-    draw = ImageDraw.Draw(img)
-
-    # Choose a font and size
-    font = ImageFont.load_default()  # Or specify a font path to use different fonts
+    # Load the static background image
+    background_image_path = "background.jpg"  # Replace with the path to your background image
+    img = Image.open(background_image_path)
 
     # Initialize ImageDraw
     draw = ImageDraw.Draw(img)
 
-    # Print list of attributes of ImageDraw object
-    print(dir(draw))
-
-    # Choose a font and size
-    font = ImageFont.load_default()
+    # Choose a font and size (large size like 200)
+    font_path = "arial.ttf"  # Replace with the path to your .ttf file
+    font_size = 200  # You can adjust the size here
+    font = ImageFont.truetype(font_path, font_size)
 
     # Define text size and position
-    bbox = draw.textbbox((0,0), title_text, font=font)
-    text_width, text_height = bbox[2]-bbox[0], bbox[3]-bbox[1]
-    text_x = (width - text_width)/2
-    text_y = (height - text_height)/2
-
-
+    bbox = draw.textbbox((0, 0), title_text, font=font)
+    text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    text_x = (img.width - text_width) / 2
+    text_y = (img.height - text_height) / 2 
 
     # Add text to the image
     draw.text((text_x, text_y), title_text, fill="black", font=font)
 
-
-
-
-
-
-    # Save the image
-    img.save('title_image.jpg')
-
+    # Save the modified image
+    img.save(title_image_name)
 
     # Load the video clip
     video_clip = VideoFileClip(video_path)
 
-    # Load the image as a clip
-    image_clip = ImageClip('title_image.jpg', duration=3)
+    # Load the modified image as a clip
+    image_clip = ImageClip(title_image_name, duration=3)
 
     # Concatenate image and video
     final_clip = concatenate_videoclips([image_clip, video_clip])
 
-    # Write the result to a file
-    final_clip.write_videofile('output_video.mp4', codec="libx264")
+     # Write the result to a file
+    try:
+        final_clip.write_videofile(output_video_name, codec="mpeg4")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 # If no file was selected, maybe print a message or exit
 else:
